@@ -78,7 +78,29 @@ class RocketChat extends Base implements NotificationInterface
         }
 
         $message = '*['.$project['name'].']* ';
-        $message .= $title;
+	$message .= $title;
+	// https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage/#attachments-detail
+	$additionalContents = array();
+	if (isset($eventData['comment'])) {
+	    $additionalContents[] = array("value" => $eventData['comment']['comment']);
+	}
+	else if (isset($eventData['subtask'])) {
+	    $additionalContents[] = array("value" => "[".$eventData['subtask']['status_name']."] ".$eventData['subtask']['title']);
+	}
+	else if (isset($eventData['task'])) {
+	    if (isset($eventData['task']['assignee_username'])) {	
+	        $additionalContents[] = array("title" => t('Assignee:'), "value" => $eventData['task']['assignee_username']);
+	    }
+	    if (isset($eventData['task']['date_started']) && 0 != $eventData['task']['date_started']) {
+	        $additionalContents[] = array("title" => t('Started:'), "value" => date('Y-m-d', $eventData['task']['date_started']));
+	    }
+	    if (isset($eventData['task']['date_due']) && 0 != $eventData['task']['date_due']) {	
+	        $additionalContents[] = array("title" => t('Due date:'), "value" => date('Y-m-d', $eventData['task']['date_due']));
+	    }
+	    if (isset($eventData['task']['description']) && !empty($eventData['task']['description'])) {
+		$additionalContents[] = array("title" => t('Description'), "value" => $eventData['task']['description']);
+	    }
+	}
 
         if ($this->configModel->get('application_url') !== '') {
             $url = $this->helper->url->to('TaskViewController', 'show', array('task_id' => $eventData['task']['id'], 'project_id' => $project['id']), '', true);
@@ -92,7 +114,11 @@ class RocketChat extends Base implements NotificationInterface
             'username' => 'Kanboard',
             'icon_url' => 'https://kanboard.net/assets/img/favicon.png',
             'attachments' => array(
-                    array('text' => $message, 'color' => $eventData['task']['color_id'])
+		    array(
+			    'text' => $message,
+			    'fields' => $additionalContents,
+			    'color' => $eventData['task']['color_id']
+		    )
             )
         );
     }
@@ -114,7 +140,6 @@ class RocketChat extends Base implements NotificationInterface
         if (! empty($channel)) {
           $payload['channel'] = $channel;
         }
-
         $this->httpClient->postFormAsync($webhook, $payload);
     }
 }
