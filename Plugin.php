@@ -10,6 +10,7 @@ use Kanboard\Core\Plugin\Base;
  *
  * @package  rocketchat
  * @author   Frederic Guillot
+ * @author   Olivier Maridat
  */
 class Plugin extends Base
 {
@@ -35,7 +36,7 @@ class Plugin extends Base
 
     public function getPluginAuthor()
     {
-        return 'Frédéric Guillot';
+        return 'Frédéric Guillot & Olivier Maridat';
     }
 
     public function getPluginVersion()
