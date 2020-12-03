@@ -70,28 +70,59 @@ class RocketChat extends Base implements NotificationInterface
      */
     public function getMessage(array $project, $eventName, array $eventData)
     {
+        $title = '['.$project['name'].'] #'.$eventData['task']['id'].' '.$eventData['task']['title'];
+        
         if ($this->userSession->isLogged()) {
             $author = $this->helper->user->getFullname();
-            $title = $this->notificationModel->getTitleWithAuthor($author, $eventName, $eventData);
+            $message = $this->notificationModel->getTitleWithAuthor($author, $eventName, $eventData);
         } else {
-            $title = $this->notificationModel->getTitleWithoutAuthor($eventName, $eventData);
+            $message = $this->notificationModel->getTitleWithoutAuthor($eventName, $eventData);
+        }
+        if ($this->configModel->get('application_url') !== '') {
+            $url = $this->helper->url->to('TaskViewController', 'show', array('task_id' => $eventData['task']['id'], 'project_id' => $project['id']), '', true);
+            $message = preg_replace('/#(\d+)( |$)/', '[#$1]('.$url.')$2', $message);
         }
 
-        $message = '*['.$project['name'].']* ';
-        $message .= $title;
-        $message .= ' ('.$eventData['task']['title'].')';
-
-        if ($this->configModel->get('application_url') !== '') {
-         $message .= ' - ';
-         $message .= '['.t('view the task on Kanboard').']';
-         $message .= '(';
-         $message .= $this->helper->url->to('TaskViewController', 'show', array('task_id' => $eventData['task']['id'], 'project_id' => $project['id']), '', true);
-         $message .= ')';
+        // https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage/#attachments-detail
+        $additionalContents = array();
+        if (isset($eventData['comment']) && $eventName != 'comment.delete') {
+            $additionalContents[] = array("value" => $eventData['comment']['comment']);
+        }
+        else if (isset($eventData['subtask'])) {
+            $additionalContents[] = array("value" => "[".$eventData['subtask']['status_name']."] ".$eventData['subtask']['title']);
+        }
+        else if (isset($eventData['task'])
+                  && $eventName != 'task.move.column'
+                  && $eventName != 'task.move.position'
+                  && $eventName != 'task.close'
+                  && $eventName != 'task_internal_link.create_update'
+                  && $eventName != 'task_internal_link.delete'
+                  && $eventName != 'task.file.create') {
+            if (isset($eventData['task']['assignee_username'])) {
+                $additionalContents[] = array("title" => t('Assignee:'), "value" => $eventData['task']['assignee_username']);
+            }
+            if (isset($eventData['task']['date_started']) && 0 != $eventData['task']['date_started']) {
+                $additionalContents[] = array("title" => t('Started:'), "value" => date('Y-m-d', $eventData['task']['date_started']));
+            }
+            if (isset($eventData['task']['date_due']) && 0 != $eventData['task']['date_due']) {
+                $additionalContents[] = array("title" => t('Due date:'), "value" => date('Y-m-d', $eventData['task']['date_due']));
+            }
+            if (isset($eventData['task']['description']) && !empty($eventData['task']['description'])) {
+                $additionalContents[] = array("title" => t('Description'), "value" => $eventData['task']['description']);
+            }
         }
 
         return array(
-            'text' => $message,
-            'username' => 'kanboard',
+            'username' => 'Kanboard',
+            'icon_url' => 'https://kanboard.org/assets/img/favicon.png',
+            'attachments' => array(
+                    array(
+                        'title' => $title,
+                        'text' => $message,
+                        'fields' => $additionalContents,
+                        'color' => $eventData['task']['color_id']
+                    )
+            )
         );
     }
 
