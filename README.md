@@ -1,6 +1,8 @@
 RocketChat plugin for Kanboard
 ==============================
 
+Note: The [original RocketChat plugin repository is declared "Not Maintained"](https://github.com/kanboard/plugin-rocketchat). This fork is maintained, has been *kind of* [accepted as the *official* replacement](https://github.com/kanboard/website/pull/255#event-4071181618) and is listed in the [Kanboard plugin marketplace](https://kanboard.org/plugins.html).
+
 Receive Kanboard notifications on [RocketChat](https://rocket.chat/).
 
 ![notifications](https://user-images.githubusercontent.com/953989/101069206-f9136b80-3599-11eb-8e7d-ffffe1c29b11.png)
@@ -11,6 +13,7 @@ Author
 ------
 
 - Frédéric Guillot
+- Olivier Maridat
 - License MIT
 
 Requirements
