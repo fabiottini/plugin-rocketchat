@@ -97,7 +97,8 @@ class RocketChat extends Base implements NotificationInterface
                   && $eventName != 'task.close'
                   && $eventName != 'task_internal_link.create_update'
                   && $eventName != 'task_internal_link.delete'
-                  && $eventName != 'task.file.create') {
+                  && $eventName != 'task.file.create'
+                  && $eventName != 'comment.delete') {
             if (isset($eventData['task']['assignee_username'])) {
                 $additionalContents[] = array("title" => t('Assignee:'), "value" => $eventData['task']['assignee_username']);
             }
