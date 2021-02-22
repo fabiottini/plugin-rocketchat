@@ -80,7 +80,7 @@ class RocketChat extends Base implements NotificationInterface
         }
         if ($this->configModel->get('application_url') !== '') {
             $url = $this->helper->url->to('TaskViewController', 'show', array('task_id' => $eventData['task']['id'], 'project_id' => $project['id']), '', true);
-            $message = preg_replace('/#(\d+)( |$)/', '[#$1]('.$url.')$2', $message);
+            $message = preg_replace('/(?:#|n°)(\d+)( |$)/', '[#$1]('.$url.')$2', $message);
         }
 
         // https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage/#attachments-detail
