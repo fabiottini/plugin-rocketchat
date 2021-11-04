@@ -86,10 +86,10 @@ class RocketChat extends Base implements NotificationInterface
         // https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage/#attachments-detail
         $additionalContents = array();
         if (isset($eventData['comment']) && $eventName != 'comment.delete') {
-            $additionalContents[] = array("title"  => 'comment', "value" => $eventData['comment']['comment']);
+            $additionalContents[] = array("title"  => t('Comment'), "value" => $eventData['comment']['comment']);
         }
         else if (isset($eventData['subtask'])) {
-            $additionalContents[] = array("title" => 'subtask', "value" => "[".$eventData['subtask']['status_name']."] ".$eventData['subtask']['title']);
+            $additionalContents[] = array("title" => t('Subtask'), "value" => "[".$eventData['subtask']['status_name']."] ".$eventData['subtask']['title']);
         }
         else if (isset($eventData['task'])
                   && $eventName != 'task.move.column'
