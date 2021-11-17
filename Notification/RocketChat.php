@@ -80,13 +80,13 @@ class RocketChat extends Base implements NotificationInterface
         }
         if ($this->configModel->get('application_url') !== '') {
             $url = $this->helper->url->to('TaskViewController', 'show', array('task_id' => $eventData['task']['id'], 'project_id' => $project['id']), '', true);
-            $message = preg_replace('/#(\d+)( |$)/', '[#$1]('.$url.')$2', $message);
+            $message = preg_replace('/(?:#|n°)(\d+)( |$)/', '[#$1]('.$url.')$2', $message);
         }
 
         // https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage/#attachments-detail
         $additionalContents = array();
         if (isset($eventData['comment']) && $eventName != 'comment.delete') {
-            $additionalContents[] = array("title"  => t('Comment'), "value" => $eventData['comment']['comment']);
+            $additionalContents[] = array("title" => t('Comment'), "value" => $eventData['comment']['comment']);
         }
         else if (isset($eventData['subtask'])) {
             $additionalContents[] = array("title" => t('Subtask'), "value" => "[".$eventData['subtask']['status_name']."] ".$eventData['subtask']['title']);
@@ -97,7 +97,8 @@ class RocketChat extends Base implements NotificationInterface
                   && $eventName != 'task.close'
                   && $eventName != 'task_internal_link.create_update'
                   && $eventName != 'task_internal_link.delete'
-                  && $eventName != 'task.file.create') {
+                  && $eventName != 'task.file.create'
+                  && $eventName != 'comment.delete') {
             if (isset($eventData['task']['assignee_username'])) {
                 $additionalContents[] = array("title" => t('Assignee:'), "value" => $eventData['task']['assignee_username']);
             }
